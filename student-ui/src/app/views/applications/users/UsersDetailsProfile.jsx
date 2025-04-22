@@ -11,7 +11,7 @@ import useAuth from "../../../hooks/useAuth";
 
 const UsersDetailsProfile = () => {
     const { user } = useAuth();
-    const { t } = useTranslation(["user", "common"]);
+    const { t } = useTranslation(["user", "common", "register"]);
     let { viewType, id } = useParams();
     const history = useHistory();
     const [loading, setLoading] = useState(false);
@@ -147,6 +147,7 @@ const UsersDetailsProfile = () => {
                         <Grid container spacing={3}>
                             <Grid item xs={10}>
                                 {tabIndex === 0 && <UsersDetails
+                                    locale={t}
                                     errors={errors}
                                     viewType={viewType}
                                     inputData={inputData}
