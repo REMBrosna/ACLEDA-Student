@@ -1,2 +1,4 @@
 # ACLEDA-Student
-Project Demo
+project demonstration
+- CRUD STUDENT MANAGEMNET
+- WEB SOCKET
