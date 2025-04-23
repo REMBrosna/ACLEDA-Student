@@ -150,25 +150,26 @@ const JwtRegister = (props) => {
                         severity: "success",
                         redirectUrl: `/session/signin`,
                     });
+                    setSubmitSuccess(true)
                     break;
                 default:
                     break;
             }
+            if (validation) {
+                console.log("validation in useEffect....", validation);
+            }
+        }  else if (error) {
+            console.log("error in useEffect....", error);
+            setValidationErrors({ ...error });
+            setLoading(false);
+        }
         if (validation) {
             console.log("validation in useEffect....", validation);
+            setValidationErrors({ ...validation });
+            setLoading(false);
         }
-    }  else if (error) {
-        console.log("error in useEffect....", error);
-        setValidationErrors({ ...error });
-        setLoading(false);
-    }
-    if (validation) {
-        console.log("validation in useEffect....", validation);
-        setValidationErrors({ ...validation });
-        setLoading(false);
-    }
 
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [urlId, isLoading, isFormSubmission, res, validation, error]);
 
 
@@ -192,8 +193,8 @@ const JwtRegister = (props) => {
     // };
     const handleSave = () => {
         if (_.isEmpty(handleValidate())){
-                setLoading(true);
-                sendRequest("/signup", "CREATE", "post", { ...inputData });
+            setLoading(true);
+            sendRequest("/signup", "CREATE", "post", { ...inputData });
         }else {
             setValidationErrors(handleValidate())
         }
@@ -317,62 +318,62 @@ const JwtRegister = (props) => {
                 </div>
             </div>
             <div className={classes.formData}>
-            <Formik
-                className={classes.formData}
-                initialValues={inputData}
-                onSubmit={(values, actions) => handleSave(values, actions, "submit")}
-                enableReinitialize={true}
-                values={inputData}
-                validate={handleValidate}>
-                {(props) => (
-                    <Form noValidate={true}>
-                        <Card className={classes.card}>
-                            <div style={{ width: "100%", height: "70px" }}>
-                                <Box display="flex" p={1}>
-                                    <Box p={1} flexGrow={1}>
-                                        <div className={classes.title}>{t("register.header")} </div>
+                <Formik
+                    className={classes.formData}
+                    initialValues={inputData}
+                    onSubmit={(values, actions) => handleSave(values, actions, "submit")}
+                    enableReinitialize={true}
+                    values={inputData}
+                    validate={handleValidate}>
+                    {(props) => (
+                        <Form noValidate={true}>
+                            <Card className={classes.card}>
+                                <div style={{ width: "100%", height: "70px" }}>
+                                    <Box display="flex" p={1}>
+                                        <Box p={1} flexGrow={1}>
+                                            <div className={classes.title}>{t("register.header")} </div>
+                                        </Box>
+                                        <Box p={1}>{formButtons}</Box>
                                     </Box>
-                                    <Box p={1}>{formButtons}</Box>
-                                </Box>
-                            </div>
-                            <Grid container>
-                                <Grid item xs={12}>
-                                    <Tabs
-                                        className="mt-4"
-                                        value={tabIndex}
-                                        onChange={handleTabChange}
-                                        indicatorColor="primary"
-                                        textColor="primary" >
+                                </div>
+                                <Grid container>
+                                    <Grid item xs={12}>
+                                        <Tabs
+                                            className="mt-4"
+                                            value={tabIndex}
+                                            onChange={handleTabChange}
+                                            indicatorColor="primary"
+                                            textColor="primary" >
 
-                                        {registerTabs.map((item, ind) => {
-                                            return <TabsWrapper
-                                                className="capitalize"
-                                                value={ind}
-                                                label={t(item.text)}
-                                                key={ind}
-                                                disabled={ind === 0 ? false : !enableTab}
-                                                icon={item.icon}
+                                            {registerTabs.map((item, ind) => {
+                                                return <TabsWrapper
+                                                    className="capitalize"
+                                                    value={ind}
+                                                    label={t(item.text)}
+                                                    key={ind}
+                                                    disabled={ind === 0 ? false : !enableTab}
+                                                    icon={item.icon}
+                                                />
+                                            })}
+                                        </Tabs>
+                                        <Divider className="mb-6" />
+                                        {tabIndex === 0 && (
+                                            <UserRegisterDetail
+                                                inputData={inputData}
+                                                isRegisterForm={isRegisterForm}
+                                                errors={validationErrors}
+                                                handleDateChange={handleDateChange}
+                                                handleInputChange={handleInputChange}
+                                                handleAutoComplete={handleAutoComplete}
+                                                locale={t}
                                             />
-                                        })}
-                                    </Tabs>
-                                    <Divider className="mb-6" />
-                                    {tabIndex === 0 && (
-                                        <UserRegisterDetail
-                                            inputData={inputData}
-                                            isRegisterForm={isRegisterForm}
-                                            errors={validationErrors}
-                                            handleDateChange={handleDateChange}
-                                            handleInputChange={handleInputChange}
-                                            handleAutoComplete={handleAutoComplete}
-                                            locale={t}
-                                        />
-                                    )}
+                                        )}
+                                    </Grid>
                                 </Grid>
-                            </Grid>
-                        </Card>
-                    </Form>
-                )}
-            </Formik>
+                            </Card>
+                        </Form>
+                    )}
+                </Formik>
             </div>
             <Footer />
         </div>
