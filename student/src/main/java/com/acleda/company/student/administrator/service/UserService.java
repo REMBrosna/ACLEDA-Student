@@ -233,16 +233,16 @@ public class UserService extends AbstractEntityService<TAppUser, String, AppUser
                 searchStatement.append(getOperator(wherePrinted) + "r.name = :role ");
                 wherePrinted = true;
 
-//                if (principal.getUsername() != null) {
-//                    searchStatement.append(" AND o.username != :currentUsername ");
-//                }
+                if (!StringUtils.isEmpty(dto.getUsername())) {
+                    searchStatement.append(" AND o.username LIKE :username ");
+                }
             } else if (isStudent) {
                 // Student sees only their own record
                 searchStatement.append(" JOIN o.roles r ");
                 searchStatement.append(getOperator(wherePrinted) + "r.name = :role ");
                 wherePrinted = true;
 
-                if (!StringUtils.isEmpty(dto.getUsername())) {
+                if (!StringUtils.isEmpty(principal.getUsername())) {
                     searchStatement.append(" AND o.username = :username ");
                 }
             }
@@ -263,22 +263,27 @@ public class UserService extends AbstractEntityService<TAppUser, String, AppUser
             if (null == dto) {
                 throw new Exception("param dto null");
             }
+
+            HashMap<String, Object> parameters = new HashMap<>();
             boolean isStudent = principal.getRoles().stream()
                     .anyMatch(t -> t.getName().equalsIgnoreCase("ROLE_STUDENT"));
             boolean isAdmin = principal.getRoles().stream()
                     .anyMatch(t -> t.getName().equalsIgnoreCase("ROLE_ADMIN"));
-            HashMap<String, Object> parameters = new HashMap<>();
-            if (!StringUtils.isEmpty(dto.getUsername()) && isStudent) {
-                parameters.put("username", dto.getUsername());
-            }
+
             if (!principal.getRoles().isEmpty() && isStudent) {
                 parameters.put("role", principal.getRoles().stream()
                         .map(Role::getName)
                         .findFirst()
                         .orElse(null));
             }
+            if (!StringUtils.isEmpty(principal.getUsername()) && isStudent) {
+                parameters.put("username", principal.getUsername());
+            }
             if (isAdmin) {
                 parameters.put("role", "ROLE_STUDENT");
+            }
+            if (!StringUtils.isEmpty(dto.getUsername()) && isAdmin) {
+                parameters.put("username", "%" + dto.getUsername() + "%");
             }
             parameters.put("status", 'A');
             return parameters;

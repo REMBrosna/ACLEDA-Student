@@ -54,7 +54,7 @@ const UsersList = () => {
         {
             name: "username",
             options: {
-                filter: false,
+                filter: true,
                 display: false,
                 viewColumns: false,
             },
@@ -71,7 +71,7 @@ const UsersList = () => {
             name: "fullName",
             label: "Name",
             options: {
-                filter: true,
+                filter: false,
             },
         },
         {
@@ -142,7 +142,7 @@ const UsersList = () => {
                 customBodyRender: (value, tableMeta, updateValue) => {
                     let remarkCount = tableMeta.rowData[2];
                     return (<C1DataTableActions
-                        editPath={`/student/applicationStudent/edit/${tableMeta.rowData[0]}`}
+                        editPath={!isStudent ? `/student/applicationStudent/edit/${tableMeta.rowData[0]}` : null}
                         viewPath={`/student/applicationStudent/view/${tableMeta.rowData[0]}`}
                         removeEventHandler={!isStudent ? (e) => handleDeleteConfirm(e, tableMeta.rowData[0]) : null}
                         // remarkPath={(e) => handleMessagePopUp(e)}
@@ -328,8 +328,9 @@ const UsersList = () => {
                 isRowSelectable={false}
                 isShowToolbar
                 isRefresh={dtRefresh}
-                filterBy={[
-                    { attribute: "username" , value : auth?.user?.username}
+                isShowFilter={!isStudent}
+                filterBy={ isAdmin && [
+                    { attribute: "id" , value : auth?.user?.id}
                 ]}
                 // defaultOrderDirection={"asc"}
                 showAdd={ isAdmin && {

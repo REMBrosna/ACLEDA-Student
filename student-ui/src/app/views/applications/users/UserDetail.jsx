@@ -29,9 +29,9 @@ const UserDetail = ({
                 <Grid container alignItems="center" spacing={3} className={classes.gridContainer}>
                     <Grid item xs={12} >
                         <C1InputField
-                            label={locale("userDetails.username")}
+                            label={locale("register:userDetails.username")}
                             name="username"
-                            disabled={viewType === "view"}
+                            disabled={viewType === "view" || viewType === "edit" }
                             required
                             inputProps={{
                                 maxLength: 35,
@@ -43,8 +43,8 @@ const UserDetail = ({
                             helperText={(errors && errors['username']) || ''} />
 
                         <C1InputField
-                            label={locale("userDetails.email")}
-                            disabled={viewType === "view"}
+                            label={locale("register:userDetails.email")}
+                            disabled={viewType === "view" || viewType === "edit" }
                             name="email"
                             required
                             inputProps={{
@@ -59,7 +59,7 @@ const UserDetail = ({
                             name="conNumber"
                             disabled={viewType === "view"}
                             type="number"
-                            label={locale("userDetails.contactTel")}
+                            label={locale("register:userDetails.contactTel")}
                             onChange={(e) => handleInputChange(e)}
                             value={inputData?.conNumber}
                             error={errors && errors['conNumber'] !== undefined}
@@ -73,7 +73,7 @@ const UserDetail = ({
                 <Grid container alignItems="center" spacing={3} className={classes.gridContainer}>
                     <Grid item xs={12}>
                         <C1InputField
-                            label={locale("userDetails.firstName")}
+                            label={locale("register:userDetails.firstName")}
                             disabled={viewType === "view"}
                             name="firstname"
                             required
@@ -120,7 +120,7 @@ const UserDetail = ({
                 <Grid container alignItems="center" spacing={3} className={classes.gridContainer}>
                     <Grid item xs={12} >
                         <C1InputField
-                            label={locale("userDetails.lastName")}
+                            label={locale("register:userDetails.lastName")}
                             disabled={viewType === "view"}
                             name="lastname"
                             inputProps={{
