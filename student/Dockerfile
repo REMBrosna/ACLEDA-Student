@@ -1,5 +1,5 @@
 # Stage 1 - Build with Maven
-FROM amazoncorretto:21-alpine as builder
+FROM amazoncorretto:21-alpine AS builder
 WORKDIR /app
 COPY mvnw .
 COPY .mvn .mvn

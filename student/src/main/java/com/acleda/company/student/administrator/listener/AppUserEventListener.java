@@ -2,7 +2,6 @@ package com.acleda.company.student.administrator.listener;
 
 import com.acleda.company.student.administrator.model.TAppUser;
 import com.acleda.company.student.administrator.repository.AppUserRepository;
-import com.acleda.company.student.administrator.repository.impl.UserDetailsServiceImpl;
 import com.acleda.company.student.event.AbstractStudentManagementEvent;
 import com.acleda.company.student.event.AppUserEvent;
 import com.acleda.company.student.notification.email.service.EmailServiceImpl;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 

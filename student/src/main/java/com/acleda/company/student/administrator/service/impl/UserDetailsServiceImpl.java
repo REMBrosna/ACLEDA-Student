@@ -1,4 +1,4 @@
-package com.acleda.company.student.administrator.repository.impl;
+package com.acleda.company.student.administrator.service.impl;
 
 import com.acleda.company.student.administrator.dto.ChangePassword;
 import com.acleda.company.student.administrator.dto.RegisterUser;
@@ -28,9 +28,13 @@ import java.util.*;
 @Service
 @Log4j2
 public class UserDetailsServiceImpl implements UserDetailsService {
-    private final AppUserRepository appUserRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final RoleRepository roleRepository;
+
+    @Autowired
+    private AppUserRepository appUserRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RoleRepository roleRepository;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
     @Autowired
@@ -38,14 +42,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private UserServiceValidator userServiceValidator;
 
-
-    public UserDetailsServiceImpl(AppUserRepository appUserRepository,
-                                  PasswordEncoder passwordEncoder,
-                                  RoleRepository roleRepository) {
-        this.appUserRepository = appUserRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.roleRepository = roleRepository;
-    }
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("Attempting to load user with username: {}", username);
@@ -72,19 +68,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (Objects.nonNull(existingUserByEmail)) {
             validationErrors.put("email", "user with the provided email already exists.");
         }
-
         // Call additional custom validator
         userServiceValidator.validateUserRegister(dto);
-        Map<String, Object> additionalErrors = validator(dto);
-        if (!additionalErrors.isEmpty()) {
-            validationErrors.putAll(additionalErrors);
-        }
-
         // Throw only if there are validation issues
         if (!validationErrors.isEmpty()) {
             throw new ValidationException(validationErrors);
         }
-
         // Proceed to register
         Role defaultRole = roleRepository.findRoleByName(GroupPosition.STUDENT.getCode());
         if (Objects.isNull(defaultRole)) {
@@ -107,17 +96,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         user.setRoles(Set.of(defaultRole));
 
         return appUserRepository.save(user);
-    }
-
-
-    private Map<String, Object> validator(RegisterUser dto) throws Exception {
-        Date now = Calendar.getInstance().getTime();
-        Map<String, Object> validationErrors = new HashMap<>();
-        // Validate contractId
-        if (StringUtils.isBlank(dto.getUsername())) {
-            validationErrors.put("username", "A user with the provided username already exists.");
-        }
-        return validationErrors;
     }
 
     public void changePassword(ChangePassword dto) throws Exception {

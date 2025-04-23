@@ -1,4 +1,4 @@
-package com.acleda.company.student.websocket.dto;
+package com.acleda.company.student.websocket.enums;
 
 public enum MessageType {
 

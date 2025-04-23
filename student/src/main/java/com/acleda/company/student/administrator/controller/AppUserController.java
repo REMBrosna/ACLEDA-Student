@@ -6,7 +6,7 @@ import com.acleda.company.student.administrator.dto.ResetPassword;
 import com.acleda.company.student.administrator.dto.TokenResponse;
 import com.acleda.company.student.administrator.enums.NotificationTemplateName;
 import com.acleda.company.student.administrator.model.TAppUser;
-import com.acleda.company.student.administrator.repository.impl.UserDetailsServiceImpl;
+import com.acleda.company.student.administrator.service.impl.UserDetailsServiceImpl;
 import com.acleda.company.student.common.exceptions.ParameterException;
 import com.acleda.company.student.common.exceptions.ValidationException;
 import com.acleda.company.student.configuration.exception.UserAlreadyExistsException;
@@ -32,15 +32,12 @@ import java.util.Objects;
 @Log4j2
 public class AppUserController {
 
-    private final UserDetailsServiceImpl userService;
+    @Autowired
+    private UserDetailsServiceImpl userService;
     @Autowired
     private AccountPrincipalService principalService;
     @Autowired
     private JwtUtil jwtService;
-
-    public AppUserController(UserDetailsServiceImpl userService) {
-        this.userService = userService;
-    }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterUser registerUserDto) {
@@ -68,21 +65,21 @@ public class AppUserController {
             UserDetails user = userService.loadUserByUsername(username);
             if (Objects.isNull(user)) {
                 serviceStatus.setMessage("User doesn't exist");
-                serviceStatus.setCode(ApiResponse.INTERNAL_SERVER_ERROR);
-                return new ResponseEntity<>(serviceStatus, HttpStatus.INTERNAL_SERVER_ERROR);
+                serviceStatus.setCode(HttpStatus.NOT_FOUND.value());
+                return new ResponseEntity<>(serviceStatus, HttpStatus.NOT_FOUND);
             }
 
             TAppUser accountPrincipal = principalService.getAccountPrincipal();
             if (Objects.isNull(accountPrincipal)) {
                 serviceStatus.setMessage("AccountPrincipal doesn't exist");
-                serviceStatus.setCode(ApiResponse.INTERNAL_SERVER_ERROR);
-                return new ResponseEntity<>(serviceStatus, HttpStatus.INTERNAL_SERVER_ERROR);
+                serviceStatus.setCode(HttpStatus.FORBIDDEN.value());
+                return new ResponseEntity<>(serviceStatus, HttpStatus.FORBIDDEN);
             }
 
             if (StringUtils.isBlank(username)) {
-                serviceStatus.setMessage("UserId is null");
-                serviceStatus.setCode(ApiResponse.INTERNAL_SERVER_ERROR);
-                return new ResponseEntity<>(serviceStatus, HttpStatus.INTERNAL_SERVER_ERROR);
+                serviceStatus.setMessage("username is invalid");
+                serviceStatus.setCode(HttpStatus.NOT_FOUND.value());
+                return new ResponseEntity<>(serviceStatus, HttpStatus.NOT_FOUND);
             }
 
             serviceStatus.setCode(ApiResponse.OK);
@@ -91,7 +88,7 @@ public class AppUserController {
         } catch (Exception ex) {
             log.error("getUserByName error", ex);
             serviceStatus.setMessage(ex.getMessage());
-            serviceStatus.setCode(ApiResponse.INTERNAL_SERVER_ERROR);
+            serviceStatus.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
             return new ResponseEntity<>(serviceStatus, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -117,26 +114,22 @@ public class AppUserController {
         ApiResponse<Object> serviceStatus = new ApiResponse<>();
         try {
             userService.changePassword(dto);
-            // Success response
             serviceStatus.setMessage("Password has been changed successfully");
-            serviceStatus.setData(null);  // You can set any additional data if needed.
+            serviceStatus.setData(null);
             return ResponseEntity.ok(serviceStatus);
         } catch (ParameterException ex) {
-            // Handle parameter-related errors (e.g., invalid input)
             log.error("Invalid input for password reset: {}", ex.getMessage(), ex);
             serviceStatus.setMessage("Invalid input: " + ex.getMessage());
             serviceStatus.setCode(HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<>(serviceStatus, HttpStatus.BAD_REQUEST);
 
         } catch (UsernameNotFoundException ex) {
-            // Handle user not found specific errors
             log.error("User not found: {}", ex.getMessage(), ex);
             serviceStatus.setMessage("User not found: " + ex.getMessage());
             serviceStatus.setCode(HttpStatus.NOT_FOUND.value());
             return new ResponseEntity<>(serviceStatus, HttpStatus.NOT_FOUND);
 
         } catch (Exception ex) {
-            // Catch any other unexpected exceptions
             log.error("Unexpected error during password reset: {}", ex.getMessage(), ex);
             serviceStatus.setMessage("An unexpected error occurred: " + ex.getMessage());
             serviceStatus.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -150,28 +143,23 @@ public class AppUserController {
         try {
             // Call service to reset user password
             userService.resetUserPassword(dto.getUserNameOrEmail(), NotificationTemplateName.RESET_PASSWORD.name());
-
-            // Success response
             serviceStatus.setMessage("Password has been reset successfully");
-            serviceStatus.setData(null);  // You can set any additional data if needed.
+            serviceStatus.setData(null);
             return ResponseEntity.ok(serviceStatus);
 
         } catch (ParameterException ex) {
-            // Handle parameter-related errors (e.g., invalid input)
             log.error("Invalid input for password reset: {}", ex.getMessage(), ex);
             serviceStatus.setMessage("Invalid input: " + ex.getMessage());
             serviceStatus.setCode(HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<>(serviceStatus, HttpStatus.BAD_REQUEST);
 
         } catch (UsernameNotFoundException ex) {
-            // Handle user not found specific errors
             log.error("User not found: {}", ex.getMessage(), ex);
             serviceStatus.setMessage("User not found: " + ex.getMessage());
             serviceStatus.setCode(HttpStatus.NOT_FOUND.value());
             return new ResponseEntity<>(serviceStatus, HttpStatus.NOT_FOUND);
 
         } catch (Exception ex) {
-            // Catch any other unexpected exceptions
             log.error("Unexpected error during password reset: {}", ex.getMessage(), ex);
             serviceStatus.setMessage("An unexpected error occurred: " + ex.getMessage());
             serviceStatus.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());

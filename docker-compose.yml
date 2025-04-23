@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  student-backend:
+    build:
+      context: ./student
+    container_name: student-backend
+    ports:
+      - "8080:8080"
+    networks:
+      - student-network
+
+  student-frontend:
+    build:
+      context: ./student-ui
+      dockerfile: Dockerfile
+    container_name: student-frontend
+    ports:
+      - "3000:80"  # React served via Nginx on port 80
+    depends_on:
+      - student-backend
+    networks:
+      - student-network
+
+networks:
+  student-network:
+    driver: bridge

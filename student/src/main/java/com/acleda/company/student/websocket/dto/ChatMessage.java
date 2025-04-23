@@ -1,5 +1,6 @@
 package com.acleda.company.student.websocket.dto;
 
+import com.acleda.company.student.websocket.enums.MessageType;
 import lombok.*;
 
 @Getter

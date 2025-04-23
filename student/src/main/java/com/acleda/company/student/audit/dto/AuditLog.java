@@ -1,6 +1,5 @@
 package com.acleda.company.student.audit.dto;
 
-
 import com.acleda.company.student.audit.model.TAuditLog;
 import com.acleda.company.student.common.AbstractDTO;
 import jakarta.validation.constraints.NotNull;

@@ -18,7 +18,7 @@ public class NotificationLogsService {
     public TNotificationLogs newNotificationLogs(String channelType){
         TNotificationLogs tNotificationLogs = new TNotificationLogs();
         tNotificationLogs.setNolType(channelType);
-        tNotificationLogs.setNolStatus('P');
+        tNotificationLogs.setNolStatus('C');
         tNotificationLogs.setNolRecStatus('A');
         return tNotificationLogs;
     }

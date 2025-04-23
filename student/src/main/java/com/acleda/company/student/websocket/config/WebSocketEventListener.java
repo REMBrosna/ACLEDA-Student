@@ -1,7 +1,7 @@
 package com.acleda.company.student.websocket.config;
 
 import com.acleda.company.student.websocket.dto.ChatMessage;
-import com.acleda.company.student.websocket.dto.MessageType;
+import com.acleda.company.student.websocket.enums.MessageType;
 import com.acleda.company.student.websocket.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

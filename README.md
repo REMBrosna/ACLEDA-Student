@@ -1,7 +1,6 @@
-Folder structure
 ACLEDA-Student/
+├── student/        (Spring Boot backend)
+│   └── Dockerfile
+├── frontend/       (React frontend)
+│   └── Dockerfile
 ├── docker-compose.yml
-├── student/
-│   └── Dockerfile (Spring Boot)
-├── frontend/
-│   └── Dockerfile (React)
