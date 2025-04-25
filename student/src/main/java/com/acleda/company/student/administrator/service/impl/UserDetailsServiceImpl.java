@@ -2,6 +2,7 @@ package com.acleda.company.student.administrator.service.impl;
 
 import com.acleda.company.student.administrator.dto.ChangePassword;
 import com.acleda.company.student.administrator.dto.RegisterUser;
+import com.acleda.company.student.administrator.enums.NotificationTemplateName;
 import com.acleda.company.student.administrator.model.TAppUser;
 import com.acleda.company.student.administrator.model.GroupPosition;
 import com.acleda.company.student.administrator.model.Role;
@@ -55,7 +56,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     public TAppUser signup(RegisterUser dto) throws Exception {
-        log.info("signup");
+        log.info("signup : {}", dto);
+//        boolean auth = principalService.getAccountPrincipal().getRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase("ROLE_ADMIN"));
 
         Map<String, Object> validationErrors = new HashMap<>();
 
@@ -92,9 +94,28 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         user.setUsrDtCreate(dto.getUsrDtCreate());
         user.setStatus('A');
         user.setUsrUidCreate("SYS");
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRoles(Set.of(defaultRole));
 
+        user.setRoles(Set.of(defaultRole));
+//        if (auth){
+//            // Generate random password and encrypt it
+//            String generateRandomPassword = RandomNumberPasswordGenerator.generateRandomPassword();
+//            String encryptedPassword = passwordEncoder.encode(generateRandomPassword);
+//
+//            // Update user details
+//            user.setPassword(encryptedPassword);
+//            user.setUsrDtLupd(new Date());
+//            appUserRepository.save(user);
+//            // Create and publish the event
+//            AppUserEvent event = new AppUserEvent(this);
+//            event.setTAppUser(user);
+//            event.setNewPassword(generateRandomPassword);
+//            event.setTemType(NotificationTemplateName.REGISTER_PASSWORD.getDesc());
+//            eventPublisher.publishEvent(event);
+//        }else {
+//            user.setPassword(passwordEncoder.encode(dto.getPassword()));
+//        }
+
+        log.error("validationErrors : {}", validationErrors);
         return appUserRepository.save(user);
     }
 

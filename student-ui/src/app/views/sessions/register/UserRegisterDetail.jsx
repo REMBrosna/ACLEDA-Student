@@ -4,18 +4,27 @@ import { useStyles } from "app/c1utils/styles";
 import C1InputField from "app/c1component/C1InputField";
 import { getValue } from "app/c1utils/utility";
 import C1SelectField from "../../../c1component/C1SelectField";
-import {MenuItem} from "@material-ui/core";
+import {MenuItem, OutlinedInput} from "@material-ui/core";
 import C1DateField from "../../../c1component/C1DateField";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import IconButton from "@material-ui/core/IconButton";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import Visibility from "@material-ui/icons/Visibility";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
 
 const UserRegisterDetail = ({
     inputData,
     isRegisterForm,
     handleDateChange,
     handleInputChange,
-    handleAutoComplete,
     errors,
     isSubmitting,
-    locale }) => {
+    newShowPassword,
+    handleClickShowPasswordNew,
+    handleMouseDownPassword,
+    locale
+}) => {
     console.log("errors",errors)
 
     const classes = useStyles();
@@ -23,6 +32,7 @@ const UserRegisterDetail = ({
         { value: "M", desc: "Male" },
         { value: "F", desc: "Female" },
     ];
+
     return (
         <Grid container alignItems="flex-start" spacing={3} className={classes.gridContainer}>
             <Grid item lg={4} md={6} xs={12} >
@@ -55,19 +65,32 @@ const UserRegisterDetail = ({
                             value={getValue(inputData?.email)}
                             error={errors && errors['email'] !== undefined}
                             helperText={(errors && errors['email']) || ''} />
-                        <C1InputField
-                            label={locale("userDetails.password")}
-                            name="password"
-                            disabled={isSubmitting}
-                            inputProps={{
-                                maxLength: 15,
-                                placeholder: locale("userDetails.enterYourPassword")
-                            }}
-                            required
-                            onChange={handleInputChange}
-                            value={getValue(inputData?.password)}
-                            error={errors && errors['password'] !== undefined}
-                            helperText={(errors && errors['password']) || ''} />
+
+                        <FormControl variant="outlined" fullWidth style={{marginTop : '15px'}}>
+                            <InputLabel htmlFor="outlined-adornment-password">
+                                {locale("userDetails.password")}</InputLabel>
+                            <OutlinedInput
+                                id="outlined-adornment-password"
+                                type={newShowPassword ? 'text' : 'password'}
+                                value={inputData?.password || ""}
+                                name="password"
+                                onChange={handleInputChange}
+                                endAdornment={
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={handleClickShowPasswordNew}
+                                            onMouseDown={handleMouseDownPassword}
+                                            edge="end"
+                                        >
+                                            {newShowPassword ? <VisibilityOff color="primary" /> : <Visibility color="primary" />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                }
+                                label="Password"
+                            />
+                        </FormControl>
+
                     </Grid>
                 </Grid>
             </Grid>

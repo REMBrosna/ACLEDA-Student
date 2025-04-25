@@ -27,6 +27,8 @@ public class TChatMessage extends AbstractPersistableCustom {
     private TAppUser userReceiver;
     @JoinColumn(name = "CONTENT")
     private String content;
+    @Column(name = "SEEN")
+    private boolean seen = false;
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "DT_CREATE", updatable = false)

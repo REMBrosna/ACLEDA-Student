@@ -14,6 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class RegisterUser {
 
+    private boolean admin;
     private String email;
     private String username;
     private String password;
@@ -29,4 +30,26 @@ public class RegisterUser {
     private String usrUidCreate;
     private Date usrDtLupd;
     private String usrUidLupd;
+
+    @Override
+    public String toString() {
+        return "RegisterUser{" +
+                "admin=" + admin +
+                ", email='" + email + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", gender='" + gender + '\'' +
+                ", dtOfBirth=" + dtOfBirth +
+                ", address='" + address + '\'' +
+                ", conNumber='" + conNumber + '\'' +
+                ", status='" + status + '\'' +
+                ", usrDtCreate=" + usrDtCreate +
+                ", usrUidCreate='" + usrUidCreate + '\'' +
+                ", usrDtLupd=" + usrDtLupd +
+                ", usrUidLupd='" + usrUidLupd + '\'' +
+                '}';
+    }
 }

@@ -11,6 +11,8 @@ import org.springframework.context.ApplicationEvent;
 public class AppUserEvent extends ApplicationEvent {
     private TAppUser tAppUser;
     private String newPassword; // 👈 Add this
+    private String registerPwd;
+    private String temType;
 
     public AppUserEvent(Object source) {
         super(source);

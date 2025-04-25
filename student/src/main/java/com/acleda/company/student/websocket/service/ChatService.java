@@ -63,4 +63,23 @@ public class ChatService {
             System.out.println("Connected user: " + user.getName());
         });
     }
+//    public void markMessagesAsSeen(String sender, String receiver) {
+//        List<TChatMessage> messages = chatMessageRepository.findBySenderAndReceiverAndSeenFalse(sender, receiver);
+//        for (TChatMessage message : messages) {
+//            message.setSeen(true);
+//        }
+//        chatMessageRepository.saveAll(messages);
+//    }
+    public List<TChatMessage> markMessagesAsSeen(String currentUser, String seenReceiver) {
+        List<TChatMessage> messages = chatMessageRepository.findBySenderAndReceiverAndSeenFalse(currentUser, seenReceiver);
+        for (TChatMessage message : messages) {
+            message.setSeen(true);
+        }
+        chatMessageRepository.saveAll(messages);
+        return messages;
+    }
+
+    public List<TChatMessage> markMessagesAsUnSeen(String userSeen) {
+        return null;
+    }
 }

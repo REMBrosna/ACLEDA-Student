@@ -45,8 +45,13 @@ public class AppUserEventListener extends AbstractStudentManagementEvent impleme
                 emailParam.setTo(convertListToArrayString(recipientList));
                 emailParam.setContentFields(content);
 
-                String templateId = "1";
-                emailParam.setTemplateId(Long.valueOf(templateId));
+                if (event.getTemType() != null){
+                    emailParam.setTemplateId(Long.valueOf(event.getTemType()));
+                }else {
+                    String templateId = "1";
+                    emailParam.setTemplateId(Long.valueOf(templateId));
+                }
+
                 // ✅ Static/fake CC
                 List<String> ccList = new ArrayList<>();
                 ccList.add("monitor@gmail.com"); // Change to any default CC email

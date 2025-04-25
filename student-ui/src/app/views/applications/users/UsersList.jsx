@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { useTranslation } from "react-i18next"
 import C1DataTable from 'app/c1component/C1DataTable';
 import C1DataTableActions from 'app/c1component/C1DataTableActions';
@@ -14,28 +14,88 @@ import C1Alert from "../../../c1component/C1Alert";
 import {useHistory} from "react-router-dom";
 import {MatxLoading} from "../../../../matx";
 import {getStatusDesc} from "../../../c1utils/statusUtils";
+import SockJS from "sockjs-client";
+import {Client} from "@stomp/stompjs";
+// Function to refresh access token
+const refreshAccessToken = async (refreshToken) => {
+    console.log("refreshToken", refreshToken)
+    const response = await fetch('http://localhost:8080/refresh-token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        console.log("data", data)
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('accessTokenExpiry', data.expiredAt); // Store expiry time
+        return data.accessToken;
+    } else {
+        console.error('Failed to refresh access token');
+        return null;
+    }
+};
+
+const getValidToken = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    const expiry = localStorage.getItem('expiredAt');
+    const currentTime = new Date().getTime() / 1000; // Current time in seconds
+
+    // Log the expiration time
+    console.log('Access token expired', expiry);
+    console.log('refreshToken', refreshToken);
+
+    // If there's no expiry or token is expired, try refreshing
+    if (accessToken && (expiry === null || currentTime > expiry)) {
+        console.log('Access token expired or no expiry found, trying to refresh it...');
+        const newToken = await refreshAccessToken(refreshToken);
+        console.log("newToken", newToken)
+
+        // If refresh is successful, store the new access token and expiry
+        if (newToken) {
+            localStorage.setItem('accessToken', newToken.token);
+            localStorage.setItem('accessTokenExpiry', newToken.expiredAt);
+            return newToken.token;
+        }
+    }
+
+    return accessToken; // Return the current access token if not expired or refreshing failed
+};
 
 const UsersList = () => {
 
     const auth = useAuth();
     const isAdmin = auth?.user?.roles?.some(role => role?.name === 'ROLE_ADMIN')
     const isStudent = auth?.user?.roles?.some(role => role?.name === 'ROLE_STUDENT')
+    const authUser = useAuth();
+    let username = authUser?.user?.username;
+
     const { t } = useTranslation(["student", "common"]);
     const [confirm, setConfirm] = useState({ id: null });
     const [open, setOpen] = useState(false);
-    const [dtRefresh, setDtRefresh] = useState(false);
     const [loading, setLoading] = useState(false);
     const [confirmAction, setConfirmAction] = useState("");
     const [openPopUp, setOpenPopUp] = useState(false);
     const [errors, setErrors] = useState({});
     const [popUpUsername, setPopUpUsername] = useState("");
-    const [userSender, setSender] = useState("");
+    const [sender, setSender] = useState("");
+    const [messageCount, setMessageCount] = useState(0);
     const [isRefresh, setRefresh] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(Date.now());
     const [message, setMessage] = useState([]);
     const history = useHistory();
     const [isSubmitSuccess, setSubmitSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
-    const { isLoading, res, validation, error, urlId, sendRequest } = useHttp();
+    const [messages, setMessages] = useState([]);
+    const [isConnected, setIsConnected] = useState(false);
+    const [input, setInput] = useState('');
+    const stompClientRef = useRef(null);
+    const { isLoading, isFormSubmission, res, validation, error, urlId, sendRequest } = useHttp();
+
     const [snackBarState, setSnackBarState] = useState({
         open: false,
         vertical: "top",
@@ -44,8 +104,6 @@ const UsersList = () => {
         severity: "success",
         redirectUrl: ''
     });
-
-    console.log("dtRefresh", dtRefresh)
     const columns = [
         {
             name: "id",
@@ -53,9 +111,10 @@ const UsersList = () => {
         },
         {
             name: "username",
+            label: "Username",
             options: {
                 filter: true,
-                display: false,
+                display: true,
                 viewColumns: false,
             },
         },
@@ -65,6 +124,13 @@ const UsersList = () => {
                 filter: false,
                 display: false,
                 viewColumns: false,
+            },
+        },
+        {
+            name: "email",
+            label: "Email",
+            options: {
+                filter: false
             },
         },
         {
@@ -103,13 +169,6 @@ const UsersList = () => {
             label: "Phone Number",
             options: {
                 filter: true
-            },
-        },
-        {
-            name: "email",
-            label: "Email",
-            options: {
-                filter: false
             },
         },
         {
@@ -164,13 +223,12 @@ const UsersList = () => {
             const receiver = auth.user.username;
             sendRequest(`/receiver/${receiver}`, 'FETCH', 'GET', null);
         }
-        console.log("urlId", urlId)
         if (urlId === "DELETE") {
             setOpen(false);
-            setDtRefresh(true);
+            setRefresh(true);
             setLoading(false);
         }
-    }, [userSender]);
+    }, [sender]);
 
 
     useEffect(() => {
@@ -200,7 +258,6 @@ const UsersList = () => {
                     break;
             }
             setRefresh(true);
-            setDtRefresh(true);
         }
         if (validation) {
             //currently only tin is validated backend. TODO will have to change this to implement properly.
@@ -213,8 +270,96 @@ const UsersList = () => {
         }
         // eslint-disable-next-line
     }, [isLoading, res, error, urlId, history]);
+    console.log("messages", messages)
+
+    useEffect(() => {
+        console.log("Messages state updated:", messages);
+    }, [messages]);
+
+    useEffect(() => {
+        if (!username) return;
+
+        const connectWebSocket = async () => {
+            const token = await getValidToken(); // ✅ await here
+
+            if (!token) {
+                console.error('❌ No valid token available');
+                return;
+            }
+
+            const socket = new SockJS(`http://localhost:8080/ws?token=${token}`);
+
+            const stompClient = new Client({
+                webSocketFactory: () => socket,
+                connectHeaders: {
+                    Authorization: `Bearer ${token}`,
+                },
+                reconnectDelay: 5000,
+                onConnect: () => {
+                    console.log('✅ Connected');
+                    setIsConnected(true);
+
+                    // stompClient.subscribe(`/user/${username}/queue/messages`, (message) => {
+                    //     const msg = JSON.parse(message.body);
+                    //     setMessages((prev) => [...prev, msg]);
+                    // });
+                    stompClient.subscribe(`/user/${username}/queue/messages`, (message) => {
+                        const data = JSON.parse(message.body);
+
+                        if (Array.isArray(data)) {
+                            setMessages(data.reverse()); // ← This makes "Hi" show up at the top visually
+                        } else {
+                            setMessages((prev) => [...prev, data]);
+                        }
+                        setRefresh(prevState => !prevState)
+                    });
+
+
+                    stompClient.publish({
+                        destination: '/app/chat.getMessages',
+                        body: JSON.stringify({
+                            sender: username,
+                            receiver: isStudent ? sender : popUpUsername,
+                        }),
+                    });
+                },
+                onStompError: (frame) => {
+                    console.error('❌ STOMP Error', frame);
+                },
+            });
+
+            stompClient.activate();
+            stompClientRef.current = stompClient;
+        };
+
+        connectWebSocket(); // 🚀 Launch the async function
+
+        return () => {
+            if (stompClientRef.current) {
+                stompClientRef.current.deactivate();
+            }
+        };
+    }, [username, popUpUsername]);
+    const sendMessage = () => {
+        if (!input.trim() || !popUpUsername || !stompClientRef.current?.connected) return;
+
+        const message = {
+            sender: username,
+            receiver: isStudent ? sender : popUpUsername,
+            content: input,
+            type: 'CHAT',
+        };
+
+        stompClientRef.current.publish({
+            destination: '/app/chat.sendPrivate',
+            body: JSON.stringify(message),
+        });
+
+        setMessages((prev) => [...prev, message]);
+        setInput('');
+    };
     const handleConfirmAction = (e) => {
-        setDtRefresh(false);
+        setRefresh(false);
         if (confirmAction === "DELETE") {
             handleDeleteHandler(e);
         }
@@ -252,6 +397,15 @@ const UsersList = () => {
             history.push(url);
         }
     };
+
+
+    console.log("isStudent", isStudent)
+    console.log("sender", sender)
+    console.log("username", username)
+    console.log("authUser", authUser)
+    console.log("isRefresh", isRefresh)
+    console.log("messageCount", messageCount)
+
     let snackBar;
     if (isSubmitSuccess) {
         const anchorOriginV = snackBarState.vertical;
@@ -306,10 +460,15 @@ const UsersList = () => {
             >
                 <UserPopUpMessage
                     auth={auth}
-                    sender={userSender}
-                    popUpUsername={popUpUsername}
-                    usrMessage={message}
+                    input={input}
                     errors={errors}
+                    sender={sender}
+                    setInput={setInput}
+                    messages={messages}
+                    isStudent={isStudent}
+                    username={username}
+                    sendMessage={sendMessage}
+                    popUpUsername={popUpUsername}
                     handleOnClose={handleOnClose}
                 />
             </C1PopUp>
@@ -327,7 +486,7 @@ const UsersList = () => {
                 isShowPrint={false}
                 isRowSelectable={false}
                 isShowToolbar
-                isRefresh={dtRefresh}
+                isRefresh={isRefresh}
                 isShowFilter={!isStudent}
                 filterBy={ isAdmin && [
                     { attribute: "id" , value : auth?.user?.id}

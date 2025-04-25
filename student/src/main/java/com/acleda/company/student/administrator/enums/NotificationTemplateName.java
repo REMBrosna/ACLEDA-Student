@@ -2,8 +2,9 @@ package com.acleda.company.student.administrator.enums;
 
 public enum NotificationTemplateName {
 
-    RESET_PASSWORD("reset_password"),
-    FORGOT_PASSWORD("forgot_password");
+    RESET_PASSWORD("1"),
+    FORGOT_PASSWORD("forgot_password"),
+    REGISTER_PASSWORD("2");
     private String desc;
 
     NotificationTemplateName(String desc) {

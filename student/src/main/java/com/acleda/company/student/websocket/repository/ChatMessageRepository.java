@@ -15,4 +15,9 @@ public interface ChatMessageRepository extends JpaRepository<TChatMessage, Strin
     List<TChatMessage> findChatHistoryBetweenUsers(TAppUser user1, TAppUser user2);
 
     List<TChatMessage> findByUserReceiver(TAppUser userSender);
+
+    @Query("SELECT o FROM TChatMessage o WHERE o.userSender.username = :currentUser AND o.userReceiver.username = :seenReceiver AND o.seen = false")
+    List<TChatMessage> findBySenderAndReceiverAndSeenFalse(String currentUser, String seenReceiver);
+
+
 }

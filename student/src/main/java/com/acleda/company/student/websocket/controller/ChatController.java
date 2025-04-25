@@ -15,6 +15,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.Principal;
 import java.util.List;
@@ -79,5 +80,33 @@ public class ChatController {
     public ResponseEntity<?> findSenderMessage(@PathVariable String username) {
         List<TChatMessage> messages = chatService.getMessagesFromSender(username);
         return ResponseEntity.ok(messages);
+    }
+//    @MessageMapping("/chat.seen")
+//    public void handleSeenMessage(@Payload ChatMessage seenInfo) {
+//        log.info("👁 Seen message from {} to {}", seenInfo.getReceiver(), seenInfo.getSender());
+//
+//        // Update DB: mark messages as seen
+//        chatService.markMessagesAsSeen(seenInfo.getSender(), seenInfo.getReceiver());
+//
+//        // Optionally, notify sender their messages were seen
+//        messagingTemplate.convertAndSendToUser(
+//                seenInfo.getSender(),
+//                "/queue/seen",
+//                seenInfo
+//        );
+//    }
+
+    @PostMapping("/seen/{username}/{seenReceiver}")
+    public ResponseEntity<?> seenMessage(@PathVariable String username, @PathVariable String seenReceiver) {
+        List<TChatMessage> messages = chatService.markMessagesAsSeen(username, seenReceiver);
+        int messageCount = messages.size();
+        return ResponseEntity.ok(messageCount);
+    }
+
+    @GetMapping("/unSeen/{username}")
+    public ResponseEntity<?> unSeenMessage(@PathVariable String username) {
+        List<TChatMessage> messages = chatService.markMessagesAsUnSeen(username);
+        int messageCount = messages.size();
+        return ResponseEntity.ok(messageCount);
     }
 }

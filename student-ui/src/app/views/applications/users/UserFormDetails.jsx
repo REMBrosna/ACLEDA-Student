@@ -36,6 +36,9 @@ const useStyles = makeStyles((theme) => ({
 
 const UserFormDetails = () => {
     const { user } = useAuth();
+    const isAdmin = user?.roles?.some(role => role?.name === 'ROLE_ADMIN')
+    console.log("isAdmin", isAdmin)
+    console.log("user", user)
     const classes = useStyles();
     const { t } = useTranslation(["register", "common","user"]);
     let { viewType, id } = useParams();
@@ -125,7 +128,7 @@ const UserFormDetails = () => {
             setErrors({});
             switch (viewType) {
                 case 'new':
-                    sendRequest(`api/v1/users`, "doCreate", "post", { ...inputData });
+                    sendRequest(`/signup`, "doCreate", "post", { ...inputData, isAdmin : isAdmin});
                     break;
                 case 'edit':
                     sendRequest(`api/v1/users/${id}`, "doUpdate", "put", { ...inputData, id: id });

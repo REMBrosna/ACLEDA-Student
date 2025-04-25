@@ -17,6 +17,7 @@ import clsx from "clsx";
 import {Form, Formik} from "formik";
 import {TabsWrapper} from "../../../portedicomponent/TabsWrapper";
 import Footer from "../../../MatxLayout/SharedCompoents/Footer";
+import useAuth from "../../../hooks/useAuth";
 
 const useStyles = makeStyles(({ palette, ...theme }) => ({
     cardHolder: {
@@ -97,7 +98,8 @@ const useStyles = makeStyles(({ palette, ...theme }) => ({
 }));
 
 const JwtRegister = (props) => {
-
+    const auth = useAuth();
+    const isAdmin = auth?.user?.roles?.some(role => role?.name === 'ROLE_ADMIN')
     const isRegisterForm = false;
     const { t } = useTranslation(["register", "common", "user"]);
     const history = useHistory();
@@ -108,6 +110,7 @@ const JwtRegister = (props) => {
     const [errors, setErrors] = useState({});
     const [enableTab, setEnableTab] = useState(false);
     const { isLoading, isFormSubmission, res, validation, error, urlId, sendRequest } = useHttp();
+    const [newShowPassword, setNewShowPassword] = useState(false);
     const [snackBarState, setSnackBarState] = useState({
         open: false,
         vertical: "top",
@@ -263,12 +266,11 @@ const JwtRegister = (props) => {
     const handleDateChange = (name, e) => {
         setInputData({ ...inputData, [name]: e });
     };
-    const handleSubmit = async (values) => {
-        setLoading(true);
-        sendRequest("api/v1/library/mst/entity/province", "saveProvince", "post", {
-            ...inputData,
-            recStatus: "A",
-        });
+    const handleMouseDownPassword = (event) => {
+        event.preventDefault();
+    };
+    const handleClickShowPasswordNew = () => {
+        setNewShowPassword(!newShowPassword);
     };
     let snackBar;
     if (isSubmitSuccess) {
@@ -362,6 +364,9 @@ const JwtRegister = (props) => {
                                                 inputData={inputData}
                                                 isRegisterForm={isRegisterForm}
                                                 errors={validationErrors}
+                                                newShowPassword={newShowPassword}
+                                                handleClickShowPasswordNew={handleClickShowPasswordNew}
+                                                handleMouseDownPassword={handleMouseDownPassword}
                                                 handleDateChange={handleDateChange}
                                                 handleInputChange={handleInputChange}
                                                 handleAutoComplete={handleAutoComplete}
